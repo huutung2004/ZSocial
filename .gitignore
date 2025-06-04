@@ -1,0 +1,71 @@
+# =====================================
+# Java & Spring Boot
+# =====================================
+/target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.iml
+*.ipr
+*.iws
+*.hprof
+
+# IntelliJ IDEA
+/.idea/
+/*.iml
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VSCode
+.vscode/
+
+# =====================================
+# Maven
+# =====================================
+/.mvn/
+/mvnw
+/mvnw.cmd
+
+# =====================================
+# OS Files
+# =====================================
+.DS_Store
+Thumbs.db
+
+# =====================================
+# Environment & Config
+# =====================================
+*.env
+*.local
+.env.*
+application-dev.properties
+application-prod.properties
+
+# =====================================
+# Docker & Keycloak Volumes
+# =====================================
+**/volume-data/
+**/volumes/
+**/keycloak-data/
+**/mysql-data/
+**/postgres-data/
+*.sock
+
+# =====================================
+# Logs
+# =====================================
+*.log
+logs/
+spring.log
+
+# =====================================
+# Others (optional)
+# =====================================
+# Nếu có build React/Angular ở frontend, ignore thư mục dist/build
+frontend/build/
+frontend/dist/
