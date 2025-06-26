@@ -1,5 +1,6 @@
 package com.example.apigateway.routes;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.server.mvc.filter.CircuitBreakerFilterFunctions;
 import org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions;
 import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions;
@@ -15,16 +16,20 @@ import static org.springframework.cloud.gateway.server.mvc.filter.FilterFunction
 
 @Configuration
 public class Routes {
+    @Value("${user_service.url}")
+    private String userServiceUrl;
+    @Value("${post_service.url}")
+    private String postServiceUrl;
     //ket noi den user-service
     @Bean
     public RouterFunction<ServerResponse> userServerRoute(){
-        return GatewayRouterFunctions.route("user_service").route(RequestPredicates.path("api/v1/user/**"), HandlerFunctions.http("http://localhost:8081"))
+        return GatewayRouterFunctions.route("user_service").route(RequestPredicates.path("api/v1/user/**"), HandlerFunctions.http(userServiceUrl))
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker("userServiceCircuitBreaker", URI.create("forward:/fallbackRoute")))
                 .build();
     }
     @Bean
     public RouterFunction<ServerResponse> userSwaggerRoute(){
-        return  GatewayRouterFunctions.route("user_service_swagger").route(RequestPredicates.path("/aggregate/User-service/v3/api-docs"), HandlerFunctions.http("http://localhost:8081"))
+        return  GatewayRouterFunctions.route("user_service_swagger").route(RequestPredicates.path("/aggregate/User-service/v3/api-docs"), HandlerFunctions.http(userServiceUrl))
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker("userSwaggerCircuitBreaker", URI.create("forward:/fallbackRoute")))
 
                 .filter(setPath("/api-docs"))
@@ -33,13 +38,13 @@ public class Routes {
     //ket noi den post-service
     @Bean
     public RouterFunction<ServerResponse> postServerRoute(){
-        return GatewayRouterFunctions.route("post_service").route(RequestPredicates.path("api/v1/posts/**"), HandlerFunctions.http("http://localhost:8082"))
+        return GatewayRouterFunctions.route("post_service").route(RequestPredicates.path("api/v1/posts/**"), HandlerFunctions.http(postServiceUrl))
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker("postServiceCircuitBreaker", URI.create("forward:/fallbackRoute")))
                 .build();
     }
     @Bean
     public RouterFunction<ServerResponse> postSwaggerRoute(){
-        return  GatewayRouterFunctions.route("post_service_swagger").route(RequestPredicates.path("/aggregate/Post-service/v3/api-docs"), HandlerFunctions.http("http://localhost:8082"))
+        return  GatewayRouterFunctions.route("post_service_swagger").route(RequestPredicates.path("/aggregate/Post-service/v3/api-docs"), HandlerFunctions.http(postServiceUrl))
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker("postSwaggerCircuitBreaker", URI.create("forward:/fallbackRoute")))
                 .filter(setPath("/api-docs"))
                 .build();

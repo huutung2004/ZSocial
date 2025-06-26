@@ -21,6 +21,8 @@ public class Like {
     private Long likeId;
     @Column(name = "user_id", nullable = false)
     private Long userId;
+    @Column(name = "post_id", nullable = false)
+    private Long postId;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
