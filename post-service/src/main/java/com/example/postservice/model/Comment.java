@@ -30,7 +30,8 @@ public class Comment {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Timestamp createdAt;
-
+    @Column(name = "post_id", nullable = false)
+    private Long postId;
     // Quan hệ Many-to-One với Post
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", insertable = false, updatable = false)

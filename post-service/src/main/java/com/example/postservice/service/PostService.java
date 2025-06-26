@@ -22,7 +22,7 @@ public class PostService implements IPostService {
         if(postRepository.existsById(id)){
             return postRepository.findById(id).get();
         }else{
-            throw new IsNotExistException("Not Found");
+            throw new IsNotExistException("Not Found Post");
         }
     }
 
@@ -31,7 +31,7 @@ public class PostService implements IPostService {
         if(postRepository.existsById(post.getPostId())){
             postRepository.save(post);
         }else {
-            throw new IsNotExistException("Not Found");
+            throw new IsNotExistException("Not Found Post");
         }
     }
 
@@ -40,7 +40,7 @@ public class PostService implements IPostService {
         if(postRepository.existsById(id)){
             postRepository.deleteById(id);
         }else {
-            throw new IsNotExistException("Not Found");
+            throw new IsNotExistException("Not Found Post");
         }
     }
 
@@ -50,7 +50,7 @@ public class PostService implements IPostService {
        if(!findPostByUserId.isEmpty()){
            return findPostByUserId;
        }else {
-           throw new IsNotExistException("Not Found");
+           throw new IsNotExistException("Not Found Post");
        }
     }
 

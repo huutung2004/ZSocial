@@ -1,0 +1,137 @@
+services:
+  keycloak-mysql:
+    image: mysql:8.0.34
+    container_name: keycloak-mysql_gateway_v1
+    ports:
+      - "3309:3306"
+    volumes:
+      - keycloak_mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: keycloak
+      MYSQL_USER: keycloak
+      MYSQL_PASSWORD: password
+    networks:
+      - my-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    platform: linux/amd64
+    container_name: keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      DB_VENDOR: MYSQL
+      DB_ADDR: keycloak-mysql
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./docker/keycloak/realms/:/opt/keycloak/data/import/
+    depends_on:
+      - keycloak-mysql
+    networks:
+      - my-network
+
+  mysql-post:
+    image: mysql:8.0.13
+    container_name: mysql_post_v1
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: post_db
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_post_data:/var/lib/mysql
+    networks:
+      - my-network
+
+  mysql-user:
+    image: mysql:8.0.13
+    container_name: mysql_user
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: user_db
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_user_data:/var/lib/mysql
+    networks:
+      - my-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "9000:9000"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      KEYCLOAK_URL: http://keycloak:8080
+      POST_SERVICE_URL: http://post-service:8082
+      USER_SERVICE_URL: http://user-service:8081
+    depends_on:
+      - keycloak
+      - post-service
+      - user-service
+    networks:
+      - my-network
+
+  post-service:
+    build:
+      context: ./post-service
+      dockerfile: Dockerfile
+    container_name: post-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-post:3306/post_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      mysql-post:
+        condition: service_healthy
+    networks:
+      - my-network
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-user:3306/user_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      mysql-user:
+        condition: service_healthy
+    networks:
+      - my-network
+
+volumes:
+  keycloak_mysql_data:
+  mysql_post_data:
+  mysql_user_data:
+
+networks:
+  my-network:
+    driver: bridge
